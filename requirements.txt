@@ -1,20 +1,10 @@
-# Core dependencies
-streamlit>=1.28.0
-numpy>=1.24.0
-scipy>=1.10.0
-scikit-learn>=1.3.0
-
-# Audio processing
-librosa>=0.10.0
-soundfile>=0.12.1
-sounddevice>=0.4.6
-
-# Machine Learning
-tensorflow>=2.13.0
-
-# Other utilities
-python-dotenv>=1.0.0
-
-# Note: pyaudio is not included as it requires system dependencies
-# and is not compatible with Streamlit Cloud
-# wave is a built-in Python module and doesn't need to be installed
+# Create a new requirements.txt with specific versions
+echo "streamlit==1.28.0
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+scikit-learn>=1.3.0,<2.0.0
+librosa>=0.10.0,<1.0.0
+soundfile>=0.12.1,<1.0.0
+sounddevice>=0.4.6,<1.0.0
+tensorflow>=2.13.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0" > requirements.txt
