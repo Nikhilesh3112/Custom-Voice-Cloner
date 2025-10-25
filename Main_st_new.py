@@ -10,6 +10,65 @@ from pydub import AudioSegment
 from pydub.playback import play
 import subprocess
 
+# Set page configuration
+st.set_page_config(
+    page_title="Custom Voice Cloner",
+    page_icon="🎙️",
+    layout="wide"
+)
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .main {
+        max-width: 1000px;
+        padding: 2rem;
+    }
+    .title {
+        color: #1E88E5;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .card {
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        background-color: #f8f9fa;
+    }
+    .success {
+        color: #388E3C;
+        font-weight: bold;
+    }
+    .info {
+        color: #0288D1;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# App Header
+st.markdown("<h1 class='title'>🎙️ Custom Voice Cloner</h1>", unsafe_allow_html=True)
+st.markdown("### Transform text to speech with custom voice profiles")
+
+# App Description
+with st.expander("ℹ️ About this App"):
+    st.write("""
+    This application allows you to convert text to speech using custom voice profiles. 
+    Select a voice profile from the dropdown menu and follow the instructions to generate speech.
+    
+    ### Features:
+    - Multiple voice profiles to choose from
+    - Real-time speech synthesis
+    - Easy-to-use interface
+    - High-quality voice output
+    
+    ### How to use:
+    1. Select a voice profile from the dropdown
+    2. Enter your text or use the microphone to speak
+    3. Click the 'Generate Speech' button
+    4. Listen to the generated speech
+    """)
+
 # Try to import noisereduce but don't fail if not available
 try:
     import noisereduce as nr
@@ -32,18 +91,31 @@ except Exception as e:
     st.error(f"Audio initialization error: {str(e)}")
     print(f"Audio error details: {traceback.format_exc()}")
 
+# Voice Profile Selection
+st.markdown("## 🎤 Select a Voice Profile")
 option = st.selectbox(
-    'Select Person You Want',
-    ('Select here...','Person1', 'Person2', 'Person3','Person4'))
+    'Choose from the available voice profiles:',
+    ('Select here...', 'Person1', 'Person2', 'Person3', 'Person4'),
+    help='Select a voice profile to use for text-to-speech generation.'
+)
 
-st.write('You selected:', option)
+if option != 'Select here...':
+    st.success(f'✅ You selected: {option}')
+    st.markdown("---")
 # agree = st.checkbox('Give Test Voice')
 
 if option == 'Person1':
     try:
         debug_info("Person1 selected")
         
-        st.write('Great!')
+        st.markdown("## 🎙️ Person 1 Voice Profile")
+        st.markdown("""
+        <div class='card'>
+            <p>This profile features a clear and professional voice suitable for various applications.</p>
+            <p>🔊 <strong>Voice Characteristics:</strong> Neutral tone, medium pitch, clear enunciation</p>
+            <p>🎯 <strong>Best for:</strong> Professional presentations, educational content, general use</p>
+        </div>
+        """, unsafe_allow_html=True)
     
         
         # Define the audio parameters
@@ -330,8 +402,16 @@ if option == 'Person1':
 
 if option == 'Person2':
     try:
+        debug_info("Person2 selected")
         
-        st.write('Great!')
+        st.markdown("## 🎙️ Person 2 Voice Profile")
+        st.markdown("""
+        <div class='card'>
+            <p>This profile features a warm and friendly voice perfect for conversational applications.</p>
+            <p>🔊 <strong>Voice Characteristics:</strong> Warm tone, slightly lower pitch, natural flow</p>
+            <p>🎯 <strong>Best for:</strong> Customer service, storytelling, casual content</p>
+        </div>
+        """, unsafe_allow_html=True)
     
         
         # Define the audio parameters
@@ -550,8 +630,16 @@ if option == 'Person2':
 # ============================================================================= 
 if option == 'Person3':
     try:
+        debug_info("Person3 selected")
         
-        st.write('Great!')
+        st.markdown("## 🎙️ Person 3 Voice Profile")
+        st.markdown("""
+        <div class='card'>
+            <p>This profile features an energetic and enthusiastic voice that captures attention.</p>
+            <p>🔊 <strong>Voice Characteristics:</strong> Energetic tone, higher pitch, expressive delivery</p>
+            <p>🎯 <strong>Best for:</strong> Marketing, entertainment, engaging presentations</p>
+        </div>
+        """, unsafe_allow_html=True)
     
         
         # Define the audio parameters
@@ -773,8 +861,16 @@ if option == 'Person3':
 # ============================================================================= 
 if option == 'Person4':
     try:
+        debug_info("Person4 selected")
         
-        st.write('Great!')
+        st.markdown("## 🎙️ Person 4 Voice Profile")
+        st.markdown("""
+        <div class='card'>
+            <p>This profile features a calm and soothing voice ideal for relaxation content.</p>
+            <p>🔊 <strong>Voice Characteristics:</strong> Calm tone, soft pitch, measured pace</p>
+            <p>🎯 <strong>Best for:</strong> Meditation guides, relaxation content, bedtime stories</p>
+        </div>
+        """, unsafe_allow_html=True)
     
         
         # Define the audio parameters
