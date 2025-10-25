@@ -1,0 +1,10 @@
+pyaudio
+SpeechRecognition
+streamlit
+numpy
+tensorflow
+wave
+scipy
+scikit-learn
+sounddevice
+librosa
