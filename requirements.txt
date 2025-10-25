@@ -7,17 +7,17 @@ scikit-learn==1.3.0
 # Audio processing
 librosa==0.10.0
 soundfile==0.12.1
-# Removed sounddevice and pyaudio as they require system dependencies
+sounddevice==0.4.6
+PyAudio==0.2.13
 
 # Machine Learning
 tensorflow==2.13.0
 
 # Other utilities
 python-dotenv==1.0.0
-# Using a version of SpeechRecognition that doesn't require pyaudio
 SpeechRecognition==3.10.0
 pydub==0.25.1
 
-# Use the built-in wave module instead of PyPI package
-# wave is included in Python's standard library
-mysql-python==1.2.5; python_version < '3.0'  # Only install for Python 2.x
+# Explicitly exclude problematic packages
+# Use the built-in wave module instead of the PyPI package
+# mysql-python is not compatible with Python 3.x
