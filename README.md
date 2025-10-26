@@ -46,10 +46,6 @@ A Streamlit-based application for voice cloning and text-to-speech conversion wi
 - `p1/`, `p2/`, `p3/`, `p4/` - Voice profile directories
 - `test text/` - Sample text files for testing
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
