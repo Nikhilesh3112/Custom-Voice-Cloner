@@ -53,115 +53,115 @@ if option != 'Select here...':
     
     if audio_bytes:
         with output_container:
-        try:
-            # Save uploaded audio to temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
-                tmp_file.write(audio_bytes.getvalue())
-                audio_path = tmp_file.name
-            
-            st.write("✅ Audio received! Processing...")
-            
-            # Convert speech to text
-            recognizer = sr.Recognizer()
-            with sr.AudioFile(audio_path) as source:
-                audio_data = recognizer.record(source)
-                try:
-                    text_rec = recognizer.recognize_google(audio_data)
-                    st.write(f"**Recognized text:** {text_rec}")
-                    
-                    # Load text data
-                    data_dir = 'Text/'
-                    file_paths = glob.glob(os.path.join(data_dir, '*.txt'))
-                    
-                    if not file_paths:
-                        st.error("No training text files found in Text/ directory")
-                    else:
-                        arr = []
-                        for file_path in file_paths:
-                            try:
-                                arr.append(int(file_path[5:len(file_path)-4]))
-                            except:
-                                pass
-                        
-                        # Read and preprocess data
-                        def read_and_preprocess_data(file_paths):
-                            data = []
-                            labels = []
-                            for file_path in file_paths:
-                                with open(file_path, 'r', encoding='utf-8') as file:
-                                    content = file.read()
-                                    data.append(content)
-                                    labels.append(os.path.basename(file_path).split('.')[0])
-                            return data, labels
-                        
-                        data, labels = read_and_preprocess_data(file_paths)
-                        
-                        # Process each word
-                        words = text_rec.split(' ')
-                        IDX = []
-                        
-                        st.write(f"**Processing {len(words)} word(s)...**")
-                        
-                        for word in words:
-                            cosine_sim = []
-                            for text_sample in data:
-                                vectorizer = TfidfVectorizer()
-                                tfidf_matrix = vectorizer.fit_transform([text_sample, word])
-                                cosine_sim.append(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1]))
-                            
-                            res = np.max(cosine_sim)
-                            IDX.append(cosine_sim.index(res))
-                        
-                        # Get selected person's folder
-                        person_folder = person_folder_map[option]
-                        
-                        # Check if folder exists
-                        if not os.path.exists(person_folder):
-                            st.error(f"Voice folder '{person_folder}' not found!")
-                        else:
-                            # Combine audio files
-                            combined_audio = None
-                            missing_files = []
-                            
-                            for idx in IDX:
-                                audio_file = f"{person_folder}/{arr[idx]}.wav"
-                                
-                                if os.path.exists(audio_file):
-                                    audio_segment = AudioSegment.from_file(audio_file, format="wav")
-                                    
-                                    # Apply pitch and speed adjustment
-                                    octaves = 0.9
-                                    new_audio = audio_segment.speedup(playback_speed=1.3 / octaves)
-                                    
-                                    if combined_audio is None:
-                                        combined_audio = new_audio
-                                    else:
-                                        combined_audio += new_audio
-                                else:
-                                    missing_files.append(arr[idx])
-                            
-                            if combined_audio:
-                                # Export combined audio
-                                output_path = "output_combined.wav"
-                                combined_audio.export(output_path, format="wav")
-                                
-                                st.success("✅ Voice cloning complete!")
-                                if missing_files:
-                                    st.info(f"Note: Some words used fallback audio (missing: {len(missing_files)} files)")
-                                st.audio(output_path)
-                            else:
-                                st.error("❌ Could not generate audio. Voice samples may be missing.")
-                
-                except sr.UnknownValueError:
-                    st.error("❌ Could not understand the audio. Please speak clearly and try again.")
-                except sr.RequestError as e:
-                    st.error(f"❌ Could not request results from speech recognition service: {e}")
-            
-            # Clean up temp file
             try:
-                os.unlink(audio_path)
-            except:
-                pass
+                # Save uploaded audio to temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
+                    tmp_file.write(audio_bytes.getvalue())
+                    audio_path = tmp_file.name
                 
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
+                st.write("✅ Audio received! Processing...")
+                
+                # Convert speech to text
+                recognizer = sr.Recognizer()
+                with sr.AudioFile(audio_path) as source:
+                    audio_data = recognizer.record(source)
+                    try:
+                        text_rec = recognizer.recognize_google(audio_data)
+                        st.write(f"**Recognized text:** {text_rec}")
+                        
+                        # Load text data
+                        data_dir = 'Text/'
+                        file_paths = glob.glob(os.path.join(data_dir, '*.txt'))
+                        
+                        if not file_paths:
+                            st.error("No training text files found in Text/ directory")
+                        else:
+                            arr = []
+                            for file_path in file_paths:
+                                try:
+                                    arr.append(int(file_path[5:len(file_path)-4]))
+                                except:
+                                    pass
+                            
+                            # Read and preprocess data
+                            def read_and_preprocess_data(file_paths):
+                                data = []
+                                labels = []
+                                for file_path in file_paths:
+                                    with open(file_path, 'r', encoding='utf-8') as file:
+                                        content = file.read()
+                                        data.append(content)
+                                        labels.append(os.path.basename(file_path).split('.')[0])
+                                return data, labels
+                            
+                            data, labels = read_and_preprocess_data(file_paths)
+                            
+                            # Process each word
+                            words = text_rec.split(' ')
+                            IDX = []
+                            
+                            st.write(f"**Processing {len(words)} word(s)...**")
+                            
+                            for word in words:
+                                cosine_sim = []
+                                for text_sample in data:
+                                    vectorizer = TfidfVectorizer()
+                                    tfidf_matrix = vectorizer.fit_transform([text_sample, word])
+                                    cosine_sim.append(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1]))
+                                
+                                res = np.max(cosine_sim)
+                                IDX.append(cosine_sim.index(res))
+                            
+                            # Get selected person's folder
+                            person_folder = person_folder_map[option]
+                            
+                            # Check if folder exists
+                            if not os.path.exists(person_folder):
+                                st.error(f"Voice folder '{person_folder}' not found!")
+                            else:
+                                # Combine audio files
+                                combined_audio = None
+                                missing_files = []
+                                
+                                for idx in IDX:
+                                    audio_file = f"{person_folder}/{arr[idx]}.wav"
+                                    
+                                    if os.path.exists(audio_file):
+                                        audio_segment = AudioSegment.from_file(audio_file, format="wav")
+                                        
+                                        # Apply pitch and speed adjustment
+                                        octaves = 0.9
+                                        new_audio = audio_segment.speedup(playback_speed=1.3 / octaves)
+                                        
+                                        if combined_audio is None:
+                                            combined_audio = new_audio
+                                        else:
+                                            combined_audio += new_audio
+                                    else:
+                                        missing_files.append(arr[idx])
+                                
+                                if combined_audio:
+                                    # Export combined audio
+                                    output_path = "output_combined.wav"
+                                    combined_audio.export(output_path, format="wav")
+                                    
+                                    st.success("✅ Voice cloning complete!")
+                                    if missing_files:
+                                        st.info(f"Note: Some words used fallback audio (missing: {len(missing_files)} files)")
+                                    st.audio(output_path)
+                                else:
+                                    st.error("❌ Could not generate audio. Voice samples may be missing.")
+                    
+                    except sr.UnknownValueError:
+                        st.error("❌ Could not understand the audio. Please speak clearly and try again.")
+                    except sr.RequestError as e:
+                        st.error(f"❌ Could not request results from speech recognition service: {e}")
+                
+                # Clean up temp file
+                try:
+                    os.unlink(audio_path)
+                except:
+                    pass
+                    
+            except Exception as e:
+                st.error(f"An error occurred: {str(e)}")
