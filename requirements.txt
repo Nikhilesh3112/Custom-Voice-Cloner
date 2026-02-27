@@ -4,3 +4,4 @@ numpy
 scikit-learn
 pydub
 ffmpeg-python
+gTTS

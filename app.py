@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from pydub import AudioSegment
 import tempfile
+from gtts import gTTS
 
 # App Title and Description
 st.set_page_config(page_title="Custom Voice Cloner", page_icon="🎙️")
@@ -121,9 +122,9 @@ if option != 'Select here...':
                             else:
                                 # Combine audio files
                                 combined_audio = None
-                                missing_files = []
+                                missing_words = []
                                 
-                                for idx in IDX:
+                                for i, idx in enumerate(IDX):
                                     audio_file = f"{person_folder}/{arr[idx]}.wav"
                                     
                                     if os.path.exists(audio_file):
@@ -138,7 +139,28 @@ if option != 'Select here...':
                                         else:
                                             combined_audio += new_audio
                                     else:
-                                        missing_files.append(arr[idx])
+                                        # Use gTTS for missing words
+                                        word = words[i]
+                                        missing_words.append(word)
+                                        
+                                        try:
+                                            # Generate speech using gTTS
+                                            tts = gTTS(text=word, lang='en', slow=False)
+                                            tts_file = f"tts_{i}.mp3"
+                                            tts.save(tts_file)
+                                            
+                                            # Convert to AudioSegment
+                                            tts_audio = AudioSegment.from_mp3(tts_file)
+                                            
+                                            if combined_audio is None:
+                                                combined_audio = tts_audio
+                                            else:
+                                                combined_audio += tts_audio
+                                            
+                                            # Clean up temp file
+                                            os.unlink(tts_file)
+                                        except Exception as e:
+                                            st.warning(f"Could not generate TTS for '{word}': {str(e)}")
                                 
                                 if combined_audio:
                                     # Export combined audio
@@ -146,8 +168,8 @@ if option != 'Select here...':
                                     combined_audio.export(output_path, format="wav")
                                     
                                     st.success("✅ Voice cloning complete!")
-                                    if missing_files:
-                                        st.info(f"Note: Some words used fallback audio (missing: {len(missing_files)} files)")
+                                    if missing_words:
+                                        st.info(f"Note: Used text-to-speech for {len(missing_words)} word(s): {', '.join(missing_words)}")
                                     st.audio(output_path)
                                 else:
                                     st.error("❌ Could not generate audio. Voice samples may be missing.")
