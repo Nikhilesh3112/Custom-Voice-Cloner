@@ -1,22 +1,35 @@
 # 🎙️ Custom Voice Cloner
 
-A Streamlit application that allows users to speak a sentence and hear it played back in a different person's voice using pre-recorded audio samples.
+A Streamlit application that combines voice cloning with text-to-speech to create natural-sounding audio output. Speak any sentence and hear it back using pre-recorded voice samples for known words and Google Text-to-Speech for unknown words.
 
 ## Features
 
 - Browser-based audio recording
 - Speech-to-text conversion using Google Speech Recognition
-- Word matching using TF-IDF vectorization
-- Voice cloning using pre-recorded audio samples
-- Support for multiple voice profiles
+- Exact word matching with voice sample library
+- Automatic fallback to Google Text-to-Speech (gTTS) for unknown words
+- Seamless audio combining for natural output
+- Support for multiple voice profiles (4 different voices)
 
 ## How It Works
 
-1. Select a person whose voice you want to use
-2. Record your voice using the browser's audio recorder
-3. The app converts your speech to text
-4. Each word is matched with pre-recorded audio samples
-5. The sentence is played back in the selected person's voice
+1. **Select a voice** - Choose from Person1, Person2, Person3, or Person4
+2. **Record your speech** - Use the browser's audio recorder
+3. **Automatic processing**:
+   - Speech is converted to text
+   - Each word is checked against the voice library
+   - **Exact match found** → Uses cloned voice sample
+   - **No match** → Uses Google Text-to-Speech
+4. **Combined output** - All words are merged into seamless audio
+
+### Example
+
+**Input:** "hello beautiful world"
+- "hello" exists in library → Cloned voice ✅
+- "beautiful" not in library → gTTS 🔊
+- "world" not in library → gTTS 🔊
+
+**Output:** Natural-sounding audio combining both sources
 
 ## Deployment to Streamlit Cloud
 
@@ -89,7 +102,9 @@ streamlit run app.py
 
 - Audio files should be in WAV format
 - Each audio file should correspond to a text file with the same number
-- The app uses Google Speech Recognition API (requires internet connection)
+- Text files should contain single words (lowercase) for exact matching
+- The app uses exact word matching (case-insensitive)
+- Unknown words are automatically spoken using Google Text-to-Speech
 - Browser must support audio recording (modern browsers like Chrome, Firefox, Edge)
 
 ## Limitations
@@ -102,9 +117,10 @@ streamlit run app.py
 
 - **Streamlit** - Web framework
 - **SpeechRecognition** - Speech-to-text conversion
-- **scikit-learn** - TF-IDF vectorization and cosine similarity
-- **pydub** - Audio manipulation
+- **gTTS (Google Text-to-Speech)** - Fallback for unknown words
+- **pydub** - Audio manipulation and combining
 - **ffmpeg** - Audio processing backend
+- **scikit-learn** - Text preprocessing (no longer used for matching)
 
 ## License
 
