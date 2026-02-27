@@ -24,7 +24,6 @@ This application allows you to speak a sentence and hear it played back in a dif
 4. The sentence is played back in the selected person's voice
 
 ---
-""")---
 """)
 
 option = st.selectbox(
