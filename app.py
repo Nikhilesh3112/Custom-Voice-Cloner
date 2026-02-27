@@ -28,7 +28,8 @@ This application allows you to speak a sentence and hear it played back in a dif
 
 option = st.selectbox(
     '🎭 Select Person Voice',
-    ('Select here...','Person1', 'Person2', 'Person3','Person4'))
+    ('Select here...','Person1', 'Person2', 'Person3','Person4'),
+    key='person_selector')
 
 if option != 'Select here...':
     st.info(f'You selected: **{option}**')
@@ -44,10 +45,14 @@ person_folder_map = {
 if option != 'Select here...':
     st.success('✅ Ready to record! Click the microphone button below and speak clearly.')
     
+    # Create a container for dynamic content
+    output_container = st.container()
+    
     # Browser-based audio recording
-    audio_bytes = st.audio_input("🎤 Record your voice")
+    audio_bytes = st.audio_input("🎤 Record your voice", key=f"audio_input_{option}")
     
     if audio_bytes:
+        with output_container:
         try:
             # Save uploaded audio to temporary file
             with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
@@ -116,6 +121,7 @@ if option != 'Select here...':
                         else:
                             # Combine audio files
                             combined_audio = None
+                            missing_files = []
                             
                             for idx in IDX:
                                 audio_file = f"{person_folder}/{arr[idx]}.wav"
@@ -132,7 +138,7 @@ if option != 'Select here...':
                                     else:
                                         combined_audio += new_audio
                                 else:
-                                    st.warning(f"Audio file not found: {audio_file}")
+                                    missing_files.append(arr[idx])
                             
                             if combined_audio:
                                 # Export combined audio
@@ -140,9 +146,11 @@ if option != 'Select here...':
                                 combined_audio.export(output_path, format="wav")
                                 
                                 st.success("✅ Voice cloning complete!")
+                                if missing_files:
+                                    st.info(f"Note: Some words used fallback audio (missing: {len(missing_files)} files)")
                                 st.audio(output_path)
                             else:
-                                st.error("Could not generate audio output")
+                                st.error("❌ Could not generate audio. Voice samples may be missing.")
                 
                 except sr.UnknownValueError:
                     st.error("❌ Could not understand the audio. Please speak clearly and try again.")
