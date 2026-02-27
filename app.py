@@ -247,30 +247,23 @@ with tab2:
         profile_path = f"custom_profiles/{profile_name}"
         text_path = f"custom_profiles/{profile_name}_text"
         
-        # Create directories if they don't exist
-        os.makedirs(profile_path, exist_ok=True)
-        os.makedirs(text_path, exist_ok=True)
+        # Check if profile already exists
+        profile_exists = os.path.exists(profile_path) and os.path.exists(text_path)
         
-        st.success(f"✅ Profile: **{profile_name}**")
+        if not profile_exists:
+            # Create directories if they don't exist
+            os.makedirs(profile_path, exist_ok=True)
+            os.makedirs(text_path, exist_ok=True)
         
-        # Show existing words in profile
-        existing_files = glob.glob(os.path.join(text_path, '*.txt'))
-        if existing_files:
-            st.info(f"📚 Current vocabulary: {len(existing_files)} words")
-            
-            # Show word list and delete button in columns
-            col1, col2 = st.columns([3, 1])
-            
-            with col1:
-                with st.expander("View vocabulary"):
-                    words_list = []
-                    for file_path in sorted(existing_files):
-                        with open(file_path, 'r', encoding='utf-8') as f:
-                            words_list.append(f.read().strip())
-                    st.write(", ".join(words_list))
-            
-            with col2:
-                if st.button("🗑️ Delete Profile", key="delete_profile", type="secondary"):
+        # Show profile header with delete button
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            st.success(f"✅ Profile: **{profile_name}**")
+        
+        with col2:
+            if profile_exists:
+                if st.button("🗑️ Delete", key="delete_profile", type="secondary", use_container_width=True):
                     try:
                         # Delete profile folders
                         import shutil
@@ -283,6 +276,19 @@ with tab2:
                         st.stop()
                     except Exception as e:
                         st.error(f"❌ Error deleting profile: {str(e)}")
+        
+        # Show existing words in profile
+        existing_files = glob.glob(os.path.join(text_path, '*.txt'))
+        if existing_files:
+            st.info(f"📚 Current vocabulary: {len(existing_files)} words")
+            
+            # Show word list
+            with st.expander("View vocabulary"):
+                words_list = []
+                for file_path in sorted(existing_files):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        words_list.append(f.read().strip())
+                st.write(", ".join(words_list))
         
         st.markdown("---")
         
