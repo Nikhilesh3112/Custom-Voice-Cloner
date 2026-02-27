@@ -1,35 +1,21 @@
 # 🎙️ Custom Voice Cloner
 
-A Streamlit application that combines voice cloning with text-to-speech to create natural-sounding audio output. Speak any sentence and hear it back using pre-recorded voice samples for known words and Google Text-to-Speech for unknown words.
+A Streamlit application that allows you to speak a sentence and hear it played back in a different person's voice using pre-recorded audio samples.
 
 ## Features
 
 - Browser-based audio recording
 - Speech-to-text conversion using Google Speech Recognition
-- Exact word matching with voice sample library
-- Automatic fallback to Google Text-to-Speech (gTTS) for unknown words
-- Seamless audio combining for natural output
+- Voice cloning using pre-recorded audio samples
+- Automatic fallback for unknown words
 - Support for multiple voice profiles (4 different voices)
 
 ## How It Works
 
 1. **Select a voice** - Choose from Person1, Person2, Person3, or Person4
 2. **Record your speech** - Use the browser's audio recorder
-3. **Automatic processing**:
-   - Speech is converted to text
-   - Each word is checked against the voice library
-   - **Exact match found** → Uses cloned voice sample
-   - **No match** → Uses Google Text-to-Speech
-4. **Combined output** - All words are merged into seamless audio
-
-### Example
-
-**Input:** "hello beautiful world"
-- "hello" exists in library → Cloned voice ✅
-- "beautiful" not in library → gTTS 🔊
-- "world" not in library → gTTS 🔊
-
-**Output:** Natural-sounding audio combining both sources
+3. **Automatic processing** - Speech is converted to text and played back in the selected voice
+4. **Natural output** - Seamless audio combining for smooth playback
 
 ## Deployment to Streamlit Cloud
 

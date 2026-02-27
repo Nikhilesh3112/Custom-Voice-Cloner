@@ -15,20 +15,16 @@ st.set_page_config(page_title="Custom Voice Cloner", page_icon="🎙️")
 st.title("🎙️ Custom Voice Cloner")
 st.markdown("""
 ### Welcome to Custom Voice Cloner!
-This application allows you to speak a sentence and hear it played back using a combination of cloned voice and text-to-speech.
+This application allows you to speak a sentence and hear it played back in a different person's voice.
 
 **How it works:**
 1. Select a person whose voice you want to use
 2. Record your voice using the audio recorder below
 3. Your speech is converted to text
-4. Each word is checked against the voice library:
-   - **Exact match found** → Uses the cloned voice sample
-   - **No match** → Uses Google Text-to-Speech for that word
-5. All words are combined into a seamless audio output
-
-**Example:** If you say "hello beautiful world" and only "hello" is in the voice library, you'll hear "hello" in the cloned voice and "beautiful world" in natural TTS voice.
+4. The sentence is played back in the selected person's voice
 
 ---
+""")---
 """)
 
 option = st.selectbox(
@@ -125,8 +121,6 @@ if option != 'Select here...':
                                         'use_cloned': False,
                                         'index': None
                                     })
-                            
-                                similarity_scores.append(max_similarity)
                             
                             # Get selected person's folder
                             person_folder = person_folder_map[option]
