@@ -9,45 +9,59 @@ from sklearn.metrics.pairwise import cosine_similarity
 from pydub import AudioSegment
 import tempfile
 from gtts import gTTS
+import json
+from datetime import datetime
 
 # App Title and Description
 st.set_page_config(page_title="Custom Voice Cloner", page_icon="🎙️")
 st.title("🎙️ Custom Voice Cloner")
-st.markdown("""
-### Welcome to Custom Voice Cloner!
-This application allows you to speak a sentence and hear it played back in a different person's voice.
 
-**How it works:**
-1. Select a person whose voice you want to use
-2. Record your voice using the audio recorder below
-3. Your speech is converted to text
-4. The sentence is played back in the selected person's voice
+# Create tabs
+tab1, tab2 = st.tabs(["🎤 Use Voice", "➕ Create Profile"])
 
----
-""")
-
-option = st.selectbox(
-    '🎭 Select Person Voice',
-    ('Select here...','Person1', 'Person2', 'Person3','Person4'),
-    key='person_selector')
-
-if option != 'Select here...':
-    st.info(f'You selected: **{option}**')
-
-# Map person to folder
-person_folder_map = {
-    'Person1': 'Me',
-    'Person2': 'p2',
-    'Person3': 'p3',
-    'Person4': 'p4'
-}
-
-if option != 'Select here...':
-    st.success('✅ Ready to record! Click the microphone button below and speak clearly.')
+# TAB 1: Use existing voice profiles
+with tab1:
+    st.markdown("""
+    ### Use Voice Cloning
+    Select a voice profile and speak a sentence to hear it in that person's voice.
     
-    # Create a container for dynamic content
-    output_container = st.container()
+    Choose from 4 pre-loaded voices or use your own custom profile created in the "Create Profile" tab.
+    """)
     
+    # Get available profiles
+    available_profiles = ['Person1', 'Person2', 'Person3', 'Person4']
+    
+    # Check for custom profiles
+    if os.path.exists('custom_profiles'):
+        custom_dirs = [d for d in os.listdir('custom_profiles') if os.path.isdir(os.path.join('custom_profiles', d))]
+        available_profiles.extend(custom_dirs)
+    
+    option = st.selectbox(
+        '🎭 Select Voice Profile',
+        ['Select here...'] + available_profiles,
+        key='person_selector')
+
+    if option != 'Select here...':
+        st.info(f'You selected: **{option}**')
+
+    # Map person to folder
+    person_folder_map = {
+        'Person1': 'Me',
+        'Person2': 'p2',
+        'Person3': 'p3',
+        'Person4': 'p4'
+    }
+    
+    # Add custom profiles to mapping
+    if option not in person_folder_map and option != 'Select here...':
+        person_folder_map[option] = f'custom_profiles/{option}'
+
+    if option != 'Select here...':
+        st.success('✅ Ready to record! Click the microphone button below and speak clearly.')
+        
+        # Create a container for dynamic content
+        output_container = st.container()
+        
     # Browser-based audio recording
     audio_bytes = st.audio_input("🎤 Record your voice", key=f"audio_input_{option}")
     
@@ -69,17 +83,25 @@ if option != 'Select here...':
                         text_rec = recognizer.recognize_google(audio_data)
                         st.write(f"**Recognized text:** {text_rec}")
                         
-                        # Load text data
-                        data_dir = 'Text/'
+                        # Load text data - check if custom profile or default
+                        if option in ['Person1', 'Person2', 'Person3', 'Person4']:
+                            data_dir = 'Text/'
+                        else:
+                            # Custom profile
+                            data_dir = f'custom_profiles/{option}_text/'
+                        
                         file_paths = glob.glob(os.path.join(data_dir, '*.txt'))
                         
                         if not file_paths:
-                            st.error("No training text files found in Text/ directory")
+                            st.error(f"No words found in {option}'s vocabulary. Please add words in the 'Create Profile' tab.")
                         else:
                             arr = []
                             for file_path in file_paths:
                                 try:
-                                    arr.append(int(file_path[5:len(file_path)-4]))
+                                    # Extract just the filename without extension
+                                    filename = os.path.basename(file_path)
+                                    index = int(filename.split('.')[0])
+                                    arr.append(index)
                                 except:
                                     pass
                             
@@ -211,3 +233,116 @@ if option != 'Select here...':
                     
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
+
+
+# TAB 2: Create Voice Profile
+with tab2:
+    st.markdown("""
+    ### Create Your Own Voice Profile
+    Build your custom voice library by recording individual words.
+    """)
+    
+    # Profile name input
+    profile_name = st.text_input("📝 Profile Name", placeholder="e.g., MyVoice", key="profile_name")
+    
+    if profile_name:
+        profile_path = f"custom_profiles/{profile_name}"
+        text_path = f"custom_profiles/{profile_name}_text"
+        
+        # Create directories if they don't exist
+        os.makedirs(profile_path, exist_ok=True)
+        os.makedirs(text_path, exist_ok=True)
+        
+        st.success(f"✅ Profile: **{profile_name}**")
+        
+        # Show existing words in profile
+        existing_files = glob.glob(os.path.join(text_path, '*.txt'))
+        if existing_files:
+            st.info(f"📚 Current vocabulary: {len(existing_files)} words")
+            
+            # Show word list
+            with st.expander("View vocabulary"):
+                words_list = []
+                for file_path in sorted(existing_files):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        words_list.append(f.read().strip())
+                st.write(", ".join(words_list))
+        
+        st.markdown("---")
+        
+        # Add new word section
+        st.subheader("➕ Add New Word")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            new_word = st.text_input("Word to record", placeholder="e.g., hello", key="new_word")
+        
+        with col2:
+            st.write("")
+            st.write("")
+        
+        if new_word:
+            new_word_lower = new_word.lower().strip()
+            
+            # Check if word already exists
+            word_exists = False
+            for file_path in existing_files:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    if f.read().strip().lower() == new_word_lower:
+                        word_exists = True
+                        st.warning(f"⚠️ Word '{new_word}' already exists in your vocabulary")
+                        break
+            
+            if not word_exists:
+                st.info(f"🎙️ Ready to record: **{new_word}**")
+                
+                # Audio recording
+                audio_bytes = st.audio_input(f"Record yourself saying '{new_word}'", key=f"record_{new_word}")
+                
+                if audio_bytes:
+                    try:
+                        # Find next available index
+                        existing_indices = []
+                        for f in glob.glob(os.path.join(profile_path, '*.wav')):
+                            try:
+                                idx = int(os.path.basename(f).split('.')[0])
+                                existing_indices.append(idx)
+                            except:
+                                pass
+                        
+                        next_idx = 0 if not existing_indices else max(existing_indices) + 1
+                        
+                        # Save audio file
+                        audio_file_path = os.path.join(profile_path, f"{next_idx}.wav")
+                        with open(audio_file_path, 'wb') as f:
+                            f.write(audio_bytes.getvalue())
+                        
+                        # Save text file
+                        text_file_path = os.path.join(text_path, f"{next_idx}.txt")
+                        with open(text_file_path, 'w', encoding='utf-8') as f:
+                            f.write(new_word_lower)
+                        
+                        st.success(f"✅ Added '{new_word}' to your profile!")
+                        st.balloons()
+                        st.info("💡 Tip: Clear the word field and add more words to build your vocabulary!")
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error saving word: {str(e)}")
+        
+        st.markdown("---")
+        
+        # Instructions
+        with st.expander("📖 How to use your custom profile"):
+            st.markdown("""
+            1. **Add words** - Record yourself saying individual words
+            2. **Build vocabulary** - Add as many words as you want
+            3. **Use it** - Go to the "Use Voice" tab and select your profile
+            4. **Speak sentences** - Any words in your vocabulary will use your voice!
+            
+            **Tips:**
+            - Speak clearly when recording
+            - Record in a quiet environment
+            - Add common words you use frequently
+            - You can add more words anytime
+            """)
