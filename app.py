@@ -197,10 +197,6 @@ if option != 'Select here...':
                                     combined_audio.export(output_path, format="wav")
                                     
                                     st.success("✅ Voice cloning complete!")
-                                    if cloned_words:
-                                        st.info(f"🎙️ Cloned voice: {', '.join(cloned_words)}")
-                                    if tts_words:
-                                        st.info(f"🔊 Text-to-speech: {', '.join(tts_words)}")
                                     st.audio(output_path)
                                 else:
                                     st.error("❌ Could not generate audio. Voice samples may be missing.")
