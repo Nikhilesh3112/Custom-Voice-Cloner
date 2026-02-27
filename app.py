@@ -31,9 +31,11 @@ with tab1:
     # Get available profiles
     available_profiles = ['Person1', 'Person2', 'Person3', 'Person4']
     
-    # Check for custom profiles
+    # Check for custom profiles (only audio folders, not _text folders)
     if os.path.exists('custom_profiles'):
-        custom_dirs = [d for d in os.listdir('custom_profiles') if os.path.isdir(os.path.join('custom_profiles', d))]
+        custom_dirs = [d for d in os.listdir('custom_profiles') 
+                      if os.path.isdir(os.path.join('custom_profiles', d)) 
+                      and not d.endswith('_text')]
         available_profiles.extend(custom_dirs)
     
     option = st.selectbox(
@@ -272,8 +274,9 @@ with tab2:
                         if os.path.exists(text_path):
                             shutil.rmtree(text_path)
                         st.success(f"✅ Profile '{profile_name}' deleted!")
-                        st.info("💡 Refresh the page or enter a new profile name to continue.")
-                        st.stop()
+                        st.info("💡 Clearing the profile name field to refresh...")
+                        # Force a rerun to refresh the UI
+                        st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error deleting profile: {str(e)}")
         
