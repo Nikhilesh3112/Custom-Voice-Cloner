@@ -17,15 +17,15 @@ st.set_page_config(page_title="Custom Voice Cloner", page_icon="🎙️")
 st.title("🎙️ Custom Voice Cloner")
 
 # Create tabs
-tab1, tab2 = st.tabs(["🎤 Use Voice", "➕ Create Profile"])
+tab1, tab2 = st.tabs(["🎤 Clone Voice", "➕ Create Profile"])
 
 # TAB 1: Use existing voice profiles
 with tab1:
     st.markdown("""
-    ### Use Voice Cloning
-    Select a voice profile and speak a sentence to hear it in that person's voice.
-    
-    Choose from 4 pre-loaded voices or use your own custom profile created in the "Create Profile" tab.
+    ### Clone Your Speech
+    Transform your spoken words into any voice profile. Select a voice, record yourself speaking, 
+    and hear your words played back in that person's voice. Words in the profile's vocabulary use 
+    the cloned voice, while others are filled in naturally.
     """)
     
     # Get available profiles
@@ -46,7 +46,7 @@ with tab1:
 
     # Map person to folder
     person_folder_map = {
-        'Person1': 'Me',
+        'Person1': 'p1',
         'Person2': 'p2',
         'Person3': 'p3',
         'Person4': 'p4'
@@ -234,8 +234,10 @@ with tab1:
 # TAB 2: Create Voice Profile
 with tab2:
     st.markdown("""
-    ### Create Your Own Voice Profile
-    Build your custom voice library by recording individual words.
+    ### Build Your Voice Library
+    Create a personalized voice profile by recording individual words. The more words you add, 
+    the more of your sentences will use your actual voice when cloning. Start with common words 
+    you use frequently, then expand your vocabulary over time.
     """)
     
     # Profile name input

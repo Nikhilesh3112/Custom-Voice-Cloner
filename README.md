@@ -34,7 +34,7 @@ A Streamlit application that allows you to speak a sentence and hear it played b
 
 1. A GitHub account
 2. Your voice sample files organized in folders:
-   - `Me/` - Person1 voice samples
+   - `p1/` - Person1 voice samples
    - `p2/` - Person2 voice samples
    - `p3/` - Person3 voice samples
    - `p4/` - Person4 voice samples
@@ -52,7 +52,7 @@ A Streamlit application that allows you to speak a sentence and hear it played b
      - `requirements.txt` (Python dependencies)
      - `packages.txt` (system dependencies)
      - `Text/` folder with all text files
-     - `Me/`, `p2/`, `p3/`, `p4/` folders with audio samples
+     - `p1/`, `p2/`, `p3/`, `p4/` folders with audio samples
 
 3. **Deploy on Streamlit Cloud**
    - Go to [share.streamlit.io](https://share.streamlit.io)
@@ -86,7 +86,7 @@ streamlit run app.py
 │   ├── 0.txt
 │   ├── 1.txt
 │   └── ...
-├── Me/                   # Person1 voice samples
+├── p1/                   # Person1 voice samples
 │   ├── 0.wav
 │   ├── 1.wav
 │   └── ...
