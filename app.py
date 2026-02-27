@@ -249,22 +249,23 @@ with tab2:
         profile_path = f"custom_profiles/{profile_name}"
         text_path = f"custom_profiles/{profile_name}_text"
         
-        # Check if profile already exists
-        profile_exists = os.path.exists(profile_path) and os.path.exists(text_path)
+        # Check if profile already exists (has folders)
+        profile_exists = os.path.exists(profile_path) or os.path.exists(text_path)
         
         if not profile_exists:
             # Create directories if they don't exist
             os.makedirs(profile_path, exist_ok=True)
             os.makedirs(text_path, exist_ok=True)
         
-        # Show profile header with delete button
+        # Show profile header with delete button (always show delete if folders exist)
         col1, col2 = st.columns([3, 1])
         
         with col1:
             st.success(f"✅ Profile: **{profile_name}**")
         
         with col2:
-            if profile_exists:
+            # Show delete button if profile folders exist (even if empty)
+            if os.path.exists(profile_path) or os.path.exists(text_path):
                 if st.button("🗑️ Delete", key="delete_profile", type="secondary", use_container_width=True):
                     try:
                         # Delete profile folders
@@ -274,8 +275,8 @@ with tab2:
                         if os.path.exists(text_path):
                             shutil.rmtree(text_path)
                         st.success(f"✅ Profile '{profile_name}' deleted!")
-                        st.info("💡 Clearing the profile name field to refresh...")
-                        # Force a rerun to refresh the UI
+                        st.info("💡 Profile removed. Switch to 'Clone Voice' tab to see updated list.")
+                        # Force a rerun to refresh the entire app
                         st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error deleting profile: {str(e)}")
