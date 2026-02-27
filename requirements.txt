@@ -1,0 +1,6 @@
+SpeechRecognition
+streamlit
+numpy
+scikit-learn
+pydub
+ffmpeg-python
