@@ -95,28 +95,24 @@ with tab1:
                         if not file_paths:
                             st.error(f"No words found in {option}'s vocabulary. Please add words in the 'Create Profile' tab.")
                         else:
-                            arr = []
-                            for file_path in file_paths:
-                                try:
-                                    # Extract just the filename without extension
-                                    filename = os.path.basename(file_path)
-                                    index = int(filename.split('.')[0])
-                                    arr.append(index)
-                                except:
-                                    pass
-                            
-                            # Read and preprocess data - create a word-to-index mapping
+                            # Read and preprocess data - create a word-to-file-number mapping
                             def read_and_preprocess_data(file_paths):
-                                data = []
-                                word_to_index = {}
-                                for i, file_path in enumerate(file_paths):
-                                    with open(file_path, 'r', encoding='utf-8') as file:
-                                        content = file.read().strip().lower()
-                                        data.append(content)
-                                        word_to_index[content] = i
-                                return data, word_to_index
+                                word_to_file_number = {}
+                                for file_path in file_paths:
+                                    try:
+                                        # Extract the file number (e.g., "11" from "Text/11.txt")
+                                        filename = os.path.basename(file_path)
+                                        file_number = int(filename.split('.')[0])
+                                        
+                                        # Read the word from the file
+                                        with open(file_path, 'r', encoding='utf-8') as file:
+                                            word = file.read().strip().lower()
+                                            word_to_file_number[word] = file_number
+                                    except:
+                                        pass
+                                return word_to_file_number
                             
-                            data, word_to_index = read_and_preprocess_data(file_paths)
+                            word_to_file_number = read_and_preprocess_data(file_paths)
                             
                             # Process each word - use exact matching
                             words = text_rec.split(' ')
@@ -128,19 +124,19 @@ with tab1:
                                 word_lower = word.lower().strip()
                                 
                                 # Check for exact match
-                                if word_lower in word_to_index:
+                                if word_lower in word_to_file_number:
                                     # Exact match found - use cloned voice
                                     word_matches.append({
                                         'word': word,
                                         'use_cloned': True,
-                                        'index': word_to_index[word_lower]
+                                        'file_number': word_to_file_number[word_lower]
                                     })
                                 else:
                                     # No match - use gTTS
                                     word_matches.append({
                                         'word': word,
                                         'use_cloned': False,
-                                        'index': None
+                                        'file_number': None
                                     })
                             
                             # Get selected person's folder
@@ -160,8 +156,8 @@ with tab1:
                                     
                                     if match['use_cloned']:
                                         # Use cloned voice
-                                        idx = match['index']
-                                        audio_file = f"{person_folder}/{arr[idx]}.wav"
+                                        file_number = match['file_number']
+                                        audio_file = f"{person_folder}/{file_number}.wav"
                                         
                                         if os.path.exists(audio_file):
                                             cloned_words.append(word)
