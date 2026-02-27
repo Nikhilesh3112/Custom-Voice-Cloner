@@ -100,18 +100,25 @@ if option != 'Select here...':
                             # Process each word
                             words = text_rec.split(' ')
                             IDX = []
+                            similarity_scores = []
                             
                             st.write(f"**Processing {len(words)} word(s)...**")
+                            
+                            # Similarity threshold - if below this, use TTS instead
+                            SIMILARITY_THRESHOLD = 0.5
                             
                             for word in words:
                                 cosine_sim = []
                                 for text_sample in data:
                                     vectorizer = TfidfVectorizer()
                                     tfidf_matrix = vectorizer.fit_transform([text_sample, word])
-                                    cosine_sim.append(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1]))
+                                    cosine_sim.append(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0])
                                 
-                                res = np.max(cosine_sim)
-                                IDX.append(cosine_sim.index(res))
+                                max_similarity = np.max(cosine_sim)
+                                best_match_idx = cosine_sim.index(max_similarity)
+                                
+                                IDX.append(best_match_idx)
+                                similarity_scores.append(max_similarity)
                             
                             # Get selected person's folder
                             person_folder = person_folder_map[option]
@@ -125,9 +132,12 @@ if option != 'Select here...':
                                 missing_words = []
                                 
                                 for i, idx in enumerate(IDX):
+                                    word = words[i]
+                                    similarity = similarity_scores[i]
                                     audio_file = f"{person_folder}/{arr[idx]}.wav"
                                     
-                                    if os.path.exists(audio_file):
+                                    # Use cloned voice only if similarity is high enough AND file exists
+                                    if similarity >= SIMILARITY_THRESHOLD and os.path.exists(audio_file):
                                         audio_segment = AudioSegment.from_file(audio_file, format="wav")
                                         
                                         # Apply pitch and speed adjustment
@@ -139,8 +149,7 @@ if option != 'Select here...':
                                         else:
                                             combined_audio += new_audio
                                     else:
-                                        # Use gTTS for missing words
-                                        word = words[i]
+                                        # Use gTTS for missing or low-similarity words
                                         missing_words.append(word)
                                         
                                         try:
