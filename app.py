@@ -258,13 +258,31 @@ with tab2:
         if existing_files:
             st.info(f"📚 Current vocabulary: {len(existing_files)} words")
             
-            # Show word list
-            with st.expander("View vocabulary"):
-                words_list = []
-                for file_path in sorted(existing_files):
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        words_list.append(f.read().strip())
-                st.write(", ".join(words_list))
+            # Show word list and delete button in columns
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                with st.expander("View vocabulary"):
+                    words_list = []
+                    for file_path in sorted(existing_files):
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            words_list.append(f.read().strip())
+                    st.write(", ".join(words_list))
+            
+            with col2:
+                if st.button("🗑️ Delete Profile", key="delete_profile", type="secondary"):
+                    try:
+                        # Delete profile folders
+                        import shutil
+                        if os.path.exists(profile_path):
+                            shutil.rmtree(profile_path)
+                        if os.path.exists(text_path):
+                            shutil.rmtree(text_path)
+                        st.success(f"✅ Profile '{profile_name}' deleted!")
+                        st.info("💡 Refresh the page or enter a new profile name to continue.")
+                        st.stop()
+                    except Exception as e:
+                        st.error(f"❌ Error deleting profile: {str(e)}")
         
         st.markdown("---")
         
