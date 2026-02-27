@@ -84,40 +84,44 @@ if option != 'Select here...':
                                 except:
                                     pass
                             
-                            # Read and preprocess data
+                            # Read and preprocess data - create a word-to-index mapping
                             def read_and_preprocess_data(file_paths):
                                 data = []
-                                labels = []
-                                for file_path in file_paths:
+                                word_to_index = {}
+                                for i, file_path in enumerate(file_paths):
                                     with open(file_path, 'r', encoding='utf-8') as file:
-                                        content = file.read()
+                                        content = file.read().strip().lower()
                                         data.append(content)
-                                        labels.append(os.path.basename(file_path).split('.')[0])
-                                return data, labels
+                                        word_to_index[content] = i
+                                return data, word_to_index
                             
-                            data, labels = read_and_preprocess_data(file_paths)
+                            data, word_to_index = read_and_preprocess_data(file_paths)
                             
-                            # Process each word
+                            # Process each word - use exact matching
                             words = text_rec.split(' ')
-                            IDX = []
-                            similarity_scores = []
+                            word_matches = []
                             
                             st.write(f"**Processing {len(words)} word(s)...**")
                             
-                            # Similarity threshold - if below this, use TTS instead
-                            SIMILARITY_THRESHOLD = 0.5
-                            
                             for word in words:
-                                cosine_sim = []
-                                for text_sample in data:
-                                    vectorizer = TfidfVectorizer()
-                                    tfidf_matrix = vectorizer.fit_transform([text_sample, word])
-                                    cosine_sim.append(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0])
+                                word_lower = word.lower().strip()
                                 
-                                max_similarity = np.max(cosine_sim)
-                                best_match_idx = cosine_sim.index(max_similarity)
-                                
-                                IDX.append(best_match_idx)
+                                # Check for exact match
+                                if word_lower in word_to_index:
+                                    # Exact match found - use cloned voice
+                                    word_matches.append({
+                                        'word': word,
+                                        'use_cloned': True,
+                                        'index': word_to_index[word_lower]
+                                    })
+                                else:
+                                    # No match - use gTTS
+                                    word_matches.append({
+                                        'word': word,
+                                        'use_cloned': False,
+                                        'index': None
+                                    })
+                            
                                 similarity_scores.append(max_similarity)
                             
                             # Get selected person's folder
@@ -129,36 +133,53 @@ if option != 'Select here...':
                             else:
                                 # Combine audio files
                                 combined_audio = None
-                                missing_words = []
+                                tts_words = []
+                                cloned_words = []
                                 
-                                for i, idx in enumerate(IDX):
-                                    word = words[i]
-                                    similarity = similarity_scores[i]
-                                    audio_file = f"{person_folder}/{arr[idx]}.wav"
+                                for match in word_matches:
+                                    word = match['word']
                                     
-                                    # Use cloned voice only if similarity is high enough AND file exists
-                                    if similarity >= SIMILARITY_THRESHOLD and os.path.exists(audio_file):
-                                        audio_segment = AudioSegment.from_file(audio_file, format="wav")
+                                    if match['use_cloned']:
+                                        # Use cloned voice
+                                        idx = match['index']
+                                        audio_file = f"{person_folder}/{arr[idx]}.wav"
                                         
-                                        # Apply pitch and speed adjustment
-                                        octaves = 0.9
-                                        new_audio = audio_segment.speedup(playback_speed=1.3 / octaves)
-                                        
-                                        if combined_audio is None:
-                                            combined_audio = new_audio
-                                        else:
-                                            combined_audio += new_audio
-                                    else:
-                                        # Use gTTS for missing or low-similarity words
-                                        missing_words.append(word)
-                                        
-                                        try:
-                                            # Generate speech using gTTS
-                                            tts = gTTS(text=word, lang='en', slow=False)
-                                            tts_file = f"tts_{i}.mp3"
-                                            tts.save(tts_file)
+                                        if os.path.exists(audio_file):
+                                            cloned_words.append(word)
+                                            audio_segment = AudioSegment.from_file(audio_file, format="wav")
                                             
-                                            # Convert to AudioSegment
+                                            # Apply pitch and speed adjustment
+                                            octaves = 0.9
+                                            new_audio = audio_segment.speedup(playback_speed=1.3 / octaves)
+                                            
+                                            if combined_audio is None:
+                                                combined_audio = new_audio
+                                            else:
+                                                combined_audio += new_audio
+                                        else:
+                                            # File doesn't exist, use gTTS
+                                            tts_words.append(word)
+                                            try:
+                                                tts = gTTS(text=word, lang='en', slow=False)
+                                                tts_file = f"tts_{word}.mp3"
+                                                tts.save(tts_file)
+                                                tts_audio = AudioSegment.from_mp3(tts_file)
+                                                
+                                                if combined_audio is None:
+                                                    combined_audio = tts_audio
+                                                else:
+                                                    combined_audio += tts_audio
+                                                
+                                                os.unlink(tts_file)
+                                            except Exception as e:
+                                                st.warning(f"Could not generate TTS for '{word}': {str(e)}")
+                                    else:
+                                        # Use gTTS for non-matching words
+                                        tts_words.append(word)
+                                        try:
+                                            tts = gTTS(text=word, lang='en', slow=False)
+                                            tts_file = f"tts_{word}.mp3"
+                                            tts.save(tts_file)
                                             tts_audio = AudioSegment.from_mp3(tts_file)
                                             
                                             if combined_audio is None:
@@ -166,7 +187,6 @@ if option != 'Select here...':
                                             else:
                                                 combined_audio += tts_audio
                                             
-                                            # Clean up temp file
                                             os.unlink(tts_file)
                                         except Exception as e:
                                             st.warning(f"Could not generate TTS for '{word}': {str(e)}")
@@ -177,8 +197,10 @@ if option != 'Select here...':
                                     combined_audio.export(output_path, format="wav")
                                     
                                     st.success("✅ Voice cloning complete!")
-                                    if missing_words:
-                                        st.info(f"Note: Used text-to-speech for {len(missing_words)} word(s): {', '.join(missing_words)}")
+                                    if cloned_words:
+                                        st.info(f"🎙️ Cloned voice: {', '.join(cloned_words)}")
+                                    if tts_words:
+                                        st.info(f"🔊 Text-to-speech: {', '.join(tts_words)}")
                                     st.audio(output_path)
                                 else:
                                     st.error("❌ Could not generate audio. Voice samples may be missing.")
